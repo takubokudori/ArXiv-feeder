@@ -16,5 +16,5 @@
   "dependencies": {
     "@types/google-apps-script": "^1.0.30"
   },
-  "description": "A Google app script to send translated arXiv feeds to Slack."
+  "description": "A Google Apps Script (GAS) to send translated arXiv feeds to Slack."
 }

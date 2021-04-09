@@ -1,6 +1,6 @@
 # ArXiv feeder
 
-A Google app script to send translated arXiv feeds to Slack. 
+A Google Apps Script (GAS) to send translated arXiv feeds to Slack. 
 
 # Usage
 
