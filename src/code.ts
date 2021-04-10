@@ -47,7 +47,7 @@ function Execute(dryRun: boolean) {
             } else {
                 Logger.log(`${item.id} is new!`);
                 let abst = FormatText(item.abstract);
-                if (targetLang !== "" && targetLang !== "en") {
+                if (!dryRun && targetLang !== "" && targetLang !== "en") {
                     abst = LanguageApp.translate(abst, "en", targetLang);
                 }
                 acquiredIDs.add(item.id);
