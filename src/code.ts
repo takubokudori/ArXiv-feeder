@@ -64,7 +64,7 @@ function Execute(dryRun: boolean) {
                 Logger.log(`${item.id} is already acquired.`);
             } else {
                 Logger.log(`${item.id} is new!`);
-                let abst = FormatText(item.abstract);
+                let abst = FormatText(item.abst);
                 if (!dryRun && targetLang !== "" && targetLang !== "en") {
                     abst = LanguageApp.translate(abst, "en", targetLang);
                 }
@@ -136,12 +136,14 @@ function GetArxivFeed(url: string) {
         const abst = abs0.slice(3, abs0.length - 5); // remove <p></p>
         const link = item.getChildText('link', atom);
         const id = link.substr(link.lastIndexOf('/') + 1);
-        const Data: { [index: string]: string; } = {};
-        Data.abstract = abst;
-        Data.id = id;
-        Data.link = link;
-        Data.title = title;
-        ret.push(Data);
+        ret.push(
+            {
+                id,
+                title,
+                link,
+                abst
+            }
+        );
     }
     return ret;
 }

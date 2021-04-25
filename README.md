@@ -53,7 +53,7 @@ clasp create ArXiv-feeder
 clasp push
 ```
 
-4. Grant the app. (First, execute `dryRun` to initialize the acquired ID list.)
+4. Grant the app. (First, execute `DryRun` to initialize the acquired ID list.)
 
 5. Set a trigger.
 
