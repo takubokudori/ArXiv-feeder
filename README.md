@@ -1,6 +1,6 @@
 # ArXiv feeder
 
-A Google Apps Script (GAS) to send translated arXiv feeds to Slack. 
+A Google Apps Script (GAS) to send translated arXiv feeds to Slack.
 
 # Usage
 
@@ -32,6 +32,7 @@ const CONFIG = {
         "http://export.arxiv.org/rss/math.QA"
     ],
     target_lang: "ja",
+    translate_title: true,
 };
 ```
 
@@ -40,6 +41,7 @@ Edit `slack_urls`, `feed_urls`, `target_lang`.
 - slack_urls : Slack webhook URLs.
 - feed_urls : ArXiv RSS URLs.
 - target_lang : Language to be translated.
+- translate_title : If this is true, the title will be translated.
 
 3. Upload to GAS.
 

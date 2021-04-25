@@ -2,14 +2,19 @@
   "name": "arxiv-feeder",
   "version": "1.0.0",
   "main": "code.ts",
+  "homepage": "https://github.com/takubokudori/ArXiv-feeder",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/takubokudori/ArXiv-feeder"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "takubokudori",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "devDependencies": {
-    "@google/clasp": "^1.4.0",
+    "@google/clasp": "^2.3.0",
     "@types/core-js": "^2.5.4",
     "tslint": "^6.1.3"
   },

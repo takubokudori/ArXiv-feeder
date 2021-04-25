@@ -13,7 +13,6 @@ limitations under the License.
 */
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 import Integer = GoogleAppsScript.Integer;
-
 /**
  * Run
  * @constructor
@@ -33,8 +32,13 @@ function DryRun() {
 function Execute(dryRun: boolean) {
     const sheet = ArXivSheet.GetActiveArXivSheet();
     const feedUrls = CONFIG.feed_urls;
-    const slackUrls = CONFIG.slack_urls;
-    const targetLang = CONFIG.target_lang;
+    if (feedUrls === undefined) {
+        Logger.log("feed_urls is empty!");
+        return;
+    }
+    const slackUrls = CONFIG.slack_urls ?? [];
+    const targetLang = CONFIG.target_lang ?? "";
+    const translateTitle = CONFIG.translate_title ?? false;
 
     const acquiredIDs = sheet.GetAcquiredIDs();
     for (let feedUrl of feedUrls) {
@@ -46,14 +50,19 @@ function Execute(dryRun: boolean) {
                 Logger.log(`${item.id} is already acquired.`);
             } else {
                 Logger.log(`${item.id} is new!`);
+                let title = item.title;
                 let abst = FormatText(item.abstract);
                 if (!dryRun && targetLang !== "" && targetLang !== "en") {
                     abst = LanguageApp.translate(abst, "en", targetLang);
                 }
+                if (!dryRun && translateTitle && targetLang !== "" && targetLang !== "en") {
+                    title = LanguageApp.translate(title, "en", targetLang);
+                }
                 acquiredIDs.add(item.id);
                 sheet.AppendID(item.id);
                 const vx = `${item.link}
-${item.title}
+${title}
+
 ${abst}`;
                 Logger.log(vx);
                 if (!dryRun) {
