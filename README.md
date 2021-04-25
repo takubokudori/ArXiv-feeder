@@ -33,6 +33,7 @@ const CONFIG = {
     ],
     target_lang: "ja",
     translate_title: true,
+    ignore_updated: true,
 };
 ```
 
@@ -41,7 +42,8 @@ Edit `slack_urls`, `feed_urls`, `target_lang`.
 - slack_urls : Slack webhook URLs.
 - feed_urls : ArXiv RSS URLs.
 - target_lang : Language to be translated.
-- translate_title : If this is true, the title will be translated.
+- translate_title : If this is true, titles will be translated.
+- ignore_updated : If this is true, paper updates will be ignored.
 
 3. Upload to GAS.
 

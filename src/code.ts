@@ -13,6 +13,7 @@ limitations under the License.
 */
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 import Integer = GoogleAppsScript.Integer;
+
 /**
  * Run
  * @constructor
@@ -39,6 +40,7 @@ function Execute(dryRun: boolean) {
     const slackUrls = CONFIG.slack_urls ?? [];
     const targetLang = CONFIG.target_lang ?? "";
     const translateTitle = CONFIG.translate_title ?? false;
+    const ignoreUpdated = CONFIG.ignore_updated ?? false;
 
     const acquiredIDs = sheet.GetAcquiredIDs();
     for (let feedUrl of feedUrls) {
@@ -46,6 +48,10 @@ function Execute(dryRun: boolean) {
         Logger.log(`Check ${feedUrl}`);
         const items = GetArxivFeed(feedUrl);
         for (const item of items) {
+            if (ignoreUpdated && item.title.endsWith("UPDATED)")) {
+                Logger.log(`${item.id} is the updated paper.`)
+                continue;
+            }
             if (acquiredIDs.has(item.id)) {
                 Logger.log(`${item.id} is already acquired.`);
             } else {
