@@ -48,6 +48,14 @@ function Execute(dryRun: boolean) {
         Logger.log(`Check ${feedUrl}`);
         const items = GetArxivFeed(feedUrl);
         for (const item of items) {
+            // Split "My Awesome Paper. (arXiv:0123.456789v0 [ab.CD])"
+            let title = item.title;
+            let info = "";
+            const p = title.lastIndexOf("(arXiv:");
+            if (p !== -1) {
+                info = title.substr(p); // (arXiv:0123.456789v0 [ab.CD])
+                title = title.substr(0, p); // My Awesome Paper.
+            }
             if (ignoreUpdated && item.title.endsWith("UPDATED)")) {
                 Logger.log(`${item.id} is the updated paper.`)
                 continue;
@@ -56,7 +64,6 @@ function Execute(dryRun: boolean) {
                 Logger.log(`${item.id} is already acquired.`);
             } else {
                 Logger.log(`${item.id} is new!`);
-                let title = item.title;
                 let abst = FormatText(item.abstract);
                 if (!dryRun && targetLang !== "" && targetLang !== "en") {
                     abst = LanguageApp.translate(abst, "en", targetLang);
@@ -67,7 +74,7 @@ function Execute(dryRun: boolean) {
                 acquiredIDs.add(item.id);
                 sheet.AppendID(item.id);
                 const vx = `${item.link}
-${title}
+${title} ${info}
 
 ${abst}`;
                 Logger.log(vx);
