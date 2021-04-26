@@ -132,8 +132,7 @@ function GetArxivFeed(url: string) {
     const ret = new Array(0);
     for (const item of items) {
         const title = item.getChildText('title', atom);
-        const abs0 = item.getChildText('description', atom);
-        const abst = abs0.slice(3, abs0.length - 5); // remove <p></p>
+        const abst = item.getChildText('description', atom);
         const link = item.getChildText('link', atom);
         const id = link.substr(link.lastIndexOf('/') + 1);
         ret.push(
@@ -174,5 +173,7 @@ function FormatText(text: string): string {
         .replace(/\?\t/g, "?\r\n")
         .replace(/Fig\.\r\n/g, "Fig. ")
         .replace(/et al\.\r\n/g, "et al. ")
-        .replace(/et al,\.\r\n/g, "et al. ");
+        .replace(/et al,\.\r\n/g, "et al. ")
+        .replace(/<p>/g, "")
+        .replace(/<\/p>/g, "");
 }
