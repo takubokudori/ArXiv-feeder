@@ -36,7 +36,7 @@ export const CONFIG: GlobalFeedConfig = {
     feeds: [
         "http://export.arxiv.org/rss/cs.DC",
         // I want to ignore the updated papers in the math.QA feed and send them only to the first webhook URL.
-        {feed_url: "http://export.arxiv.org/rss/math.QA", ignore_update: true, slack_urls:[0]}
+        {feed_url: "http://export.arxiv.org/rss/math.QA", ignore_update: true, slack_urls: [0]}
     ],
 };
 ```
@@ -44,9 +44,10 @@ export const CONFIG: GlobalFeedConfig = {
 Edit parameters.
 
 - slack_urls : Slack webhook URLs.
-- target_lang : Language to be translated.
-- translate_title : If this is true, titles will be translated.
-- ignore_updated : If this is true, updated papers will be ignored.
+- source_lang : Source language. `"en"` by default.
+- target_lang : Target language. No translation by default.
+- translate_title : If this is true, titles will be translated. `false` by default.
+- ignore_updated : If this is true, updated papers will be ignored. `false` by default.
 - feeds : ArXiv RSS URLs.
     - feeds can specify a URL string, or a config object.
     - Each feed can have its own configurations, which can override the global configurations.
