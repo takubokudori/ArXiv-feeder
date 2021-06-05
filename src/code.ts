@@ -31,14 +31,14 @@ function DryRun() {
 }
 
 function execute(dryRun: boolean) {
-    const sheet = ArXivSheet.GetActiveArXivSheet();
+    const sheet = ArXivSheet.getActiveArXivSheet();
 
-    const acquiredIDs = sheet.GetAcquiredIDs();
+    const acquiredIDs = sheet.getAcquiredIDs();
 
     for (let i = 0; i < exports.CONFIG.feeds.length; i++) {
         let feed = feedConfigToFeedInfo(exports.CONFIG, i);
         Logger.log(`Check ${feed.feed_url}`);
-        const items = GetArxivFeed(feed.feed_url);
+        const items = getArxivFeed(feed.feed_url);
         for (const item of items) {
             // Split "My Awesome Paper. (arXiv:0123.456789v0 [ab.CD])"
             let title = item.title;
@@ -56,7 +56,7 @@ function execute(dryRun: boolean) {
                 Logger.log(`${item.id} is already acquired.`);
             } else {
                 Logger.log(`${item.id} is new!`);
-                let abst = FormatText(item.abst);
+                let abst = formatText(item.abst);
                 if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
                     abst = LanguageApp.translate(abst, "en", feed.target_lang);
                 }
@@ -64,7 +64,7 @@ function execute(dryRun: boolean) {
                     title = LanguageApp.translate(title, "en", feed.target_lang);
                 }
                 acquiredIDs.add(item.id);
-                sheet.AppendID(item.id);
+                sheet.appendID(item.id);
                 const vx = `${item.link}
 ${title} ${info}
 
@@ -72,7 +72,7 @@ ${abst}`;
                 Logger.log(vx);
                 if (!dryRun) {
                     feed.slack_urls.forEach(slack_url => {
-                        PostToSlack(slack_url.trim(), vx);
+                        postToSlack(slack_url.trim(), vx);
 
                     })
                 }
@@ -88,11 +88,11 @@ class ArXivSheet {
         this.sheet = sheet;
     }
 
-    static GetActiveArXivSheet() {
+    static getActiveArXivSheet() {
         return new ArXivSheet(SpreadsheetApp.getActiveSpreadsheet().getActiveSheet());
     }
 
-    GetRowsAsSet(row: Integer) {
+    getRowsAsSet(row: Integer) {
         const lastRow = this.sheet.getLastRow();
         let arr = [];
         if (lastRow > 0) {
@@ -105,17 +105,17 @@ class ArXivSheet {
         return ret;
     }
 
-    GetAcquiredIDs() {
-        return this.GetRowsAsSet(1);
+    getAcquiredIDs() {
+        return this.getRowsAsSet(1);
     }
 
-    AppendID(id: string) {
+    appendID(id: string) {
         this.sheet.appendRow([`'${id}`]);
     }
 
 }
 
-function GetArxivFeed(url: string) {
+function getArxivFeed(url: string) {
     const xml = UrlFetchApp.fetch(url).getContentText();
     const document = XmlService.parse(xml);
     const root = document.getRootElement();
@@ -139,7 +139,7 @@ function GetArxivFeed(url: string) {
     return ret;
 }
 
-function PostToSlack(url: string, text: string) {
+function postToSlack(url: string, text: string) {
     UrlFetchApp.fetch(url,
         {
             'method': 'post',
@@ -149,7 +149,7 @@ function PostToSlack(url: string, text: string) {
     );
 }
 
-function FormatText(text: string): string {
+function formatText(text: string): string {
     return text
         .replace(/\r/g, "")
         .replace(/\n/g, " ")
