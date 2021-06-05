@@ -16,7 +16,7 @@ git clone https://github.com/takubokudori/ArXiv-feeder
 
 ```
 cd ArXiv-feeder
-npm install
+yarn install --dev
 vi src/config.ts
 ```
 
@@ -59,9 +59,9 @@ clasp create ArXiv-feeder
 clasp push
 ```
 
-4. Grant the app. (First, execute `DryRun` to initialize the acquired ID list.)
+4. Grant the app. (First, execute `dryRun` to initialize the acquired ID list.)
 
-5. Set a trigger.
+5. Set a `run` trigger.
 
 ![trigger](https://user-images.githubusercontent.com/16149911/113476401-4951fa00-94b6-11eb-8548-126c409b0425.PNG)
 

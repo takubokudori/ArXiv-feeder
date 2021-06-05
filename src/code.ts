@@ -18,7 +18,7 @@ import Integer = GoogleAppsScript.Integer;
  * Run
  * @constructor
  */
-function Run() {
+function run() {
     execute(false);
 }
 
@@ -26,13 +26,12 @@ function Run() {
  * DryRun doesn't send to slack.
  * @constructor
  */
-function DryRun() {
+function dryRun() {
     execute(true);
 }
 
 function execute(dryRun: boolean) {
     const sheet = ArXivSheet.getActiveArXivSheet();
-
     const acquiredIDs = sheet.getAcquiredIDs();
 
     for (let i = 0; i < exports.CONFIG.feeds.length; i++) {
@@ -65,16 +64,15 @@ function execute(dryRun: boolean) {
                 }
                 acquiredIDs.add(item.id);
                 sheet.appendID(item.id);
-                const vx = `${item.link}
+                const feedText = `${item.link}
 ${title} ${info}
 
 ${abst}`;
-                Logger.log(vx);
+                Logger.log(feedText);
                 if (!dryRun) {
                     feed.slack_urls.forEach(slack_url => {
-                        postToSlack(slack_url.trim(), vx);
-
-                    })
+                        postToSlack(slack_url.trim(), feedText);
+                    });
                 }
             }
         }
