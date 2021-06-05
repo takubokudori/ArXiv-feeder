@@ -23,27 +23,33 @@ vi src/config.ts
 * An example to config.ts
 
 ```
-const CONFIG = {
+import {GlobalFeedConfig} from "./configuration";
+
+export const CONFIG: GlobalFeedConfig = {
     slack_urls: [
         "https://hooks.slack.com/services/Y0ur/w5bHO0k/URL",
-    ],
-    feed_urls: [
-        "http://export.arxiv.org/rss/cs.DC",
-        "http://export.arxiv.org/rss/math.QA"
+        "https://hooks.slack.com/services/Y0ur/w5bHO0k/URL2",
     ],
     target_lang: "ja",
     translate_title: true,
-    ignore_updated: true,
+    ignore_updated: false,
+    feeds: [
+        "http://export.arxiv.org/rss/cs.DC",
+        // I want to ignore the updated papers in the math.QA feed and send them only to the first webhook URL.
+        {feed_url: "http://export.arxiv.org/rss/math.QA", ignore_update: true, slack_urls:[0]}
+    ],
 };
 ```
 
-Edit `slack_urls`, `feed_urls`, `target_lang`.
+Edit parameters.
 
 - slack_urls : Slack webhook URLs.
-- feed_urls : ArXiv RSS URLs.
 - target_lang : Language to be translated.
 - translate_title : If this is true, titles will be translated.
-- ignore_updated : If this is true, paper updates will be ignored.
+- ignore_updated : If this is true, updated papers will be ignored.
+- feeds : ArXiv RSS URLs.
+    - feeds can specify a URL string, or a config object.
+    - Each feed can have its own configurations, which can override the global configurations.
 
 3. Upload to GAS.
 

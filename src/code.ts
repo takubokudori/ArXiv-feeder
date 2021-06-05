@@ -1,4 +1,3 @@
-///<reference path="config.ts"/>
 /*
 Copyright 2021 takubokudori
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import {feedConfigToFeedInfo} from "./configuration";
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 import Integer = GoogleAppsScript.Integer;
 
@@ -19,7 +19,7 @@ import Integer = GoogleAppsScript.Integer;
  * @constructor
  */
 function Run() {
-    Execute(false);
+    execute(false);
 }
 
 /**
@@ -27,26 +27,18 @@ function Run() {
  * @constructor
  */
 function DryRun() {
-    Execute(true);
+    execute(true);
 }
 
-function Execute(dryRun: boolean) {
+function execute(dryRun: boolean) {
     const sheet = ArXivSheet.GetActiveArXivSheet();
-    const feedUrls = CONFIG.feed_urls;
-    if (feedUrls === undefined) {
-        Logger.log("feed_urls is empty!");
-        return;
-    }
-    const slackUrls = CONFIG.slack_urls ?? [];
-    const targetLang = CONFIG.target_lang ?? "";
-    const translateTitle = CONFIG.translate_title ?? false;
-    const ignoreUpdated = CONFIG.ignore_updated ?? false;
 
     const acquiredIDs = sheet.GetAcquiredIDs();
-    for (let feedUrl of feedUrls) {
-        feedUrl = feedUrl.trim();
-        Logger.log(`Check ${feedUrl}`);
-        const items = GetArxivFeed(feedUrl);
+
+    for (let i = 0; i < exports.CONFIG.feeds.length; i++) {
+        let feed = feedConfigToFeedInfo(exports.CONFIG, i);
+        Logger.log(`Check ${feed.feed_url}`);
+        const items = GetArxivFeed(feed.feed_url);
         for (const item of items) {
             // Split "My Awesome Paper. (arXiv:0123.456789v0 [ab.CD])"
             let title = item.title;
@@ -56,7 +48,7 @@ function Execute(dryRun: boolean) {
                 info = title.substr(p); // (arXiv:0123.456789v0 [ab.CD])
                 title = title.substr(0, p); // My Awesome Paper.
             }
-            if (ignoreUpdated && item.title.endsWith("UPDATED)")) {
+            if (feed.ignore_updated && item.title.endsWith("UPDATED)")) {
                 Logger.log(`${item.id} is the updated paper.`)
                 continue;
             }
@@ -65,11 +57,11 @@ function Execute(dryRun: boolean) {
             } else {
                 Logger.log(`${item.id} is new!`);
                 let abst = FormatText(item.abst);
-                if (!dryRun && targetLang !== "" && targetLang !== "en") {
-                    abst = LanguageApp.translate(abst, "en", targetLang);
+                if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
+                    abst = LanguageApp.translate(abst, "en", feed.target_lang);
                 }
-                if (!dryRun && translateTitle && targetLang !== "" && targetLang !== "en") {
-                    title = LanguageApp.translate(title, "en", targetLang);
+                if (!dryRun && feed.translate_title && feed.target_lang !== "" && feed.target_lang !== "en") {
+                    title = LanguageApp.translate(title, "en", feed.target_lang);
                 }
                 acquiredIDs.add(item.id);
                 sheet.AppendID(item.id);
@@ -79,9 +71,10 @@ ${title} ${info}
 ${abst}`;
                 Logger.log(vx);
                 if (!dryRun) {
-                    for (const slackUrl of slackUrls) {
-                        PostToSlack(slackUrl.trim(), vx);
-                    }
+                    feed.slack_urls.forEach(slack_url => {
+                        PostToSlack(slack_url.trim(), vx);
+
+                    })
                 }
             }
         }
@@ -107,7 +100,6 @@ class ArXivSheet {
         }
         const l = [].concat(...arr);
 
-        // @ts-ignore
         const ret = new Set<string>(l);
         ret.delete("");
         return ret;
