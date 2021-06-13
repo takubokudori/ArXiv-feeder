@@ -33,11 +33,30 @@ function dryRun() {
 function execute(dryRun: boolean) {
     const sheet = ArXivSheet.getActiveArXivSheet();
     const acquiredIDs = sheet.getAcquiredIDs();
+    const abortTiming = exports.CONFIG.abort ?? "no";
+    switch (abortTiming) {
+        case "immediately":
+        case "yes":
+        case "no":
+            break;
+        default:
+            throw new Error(`Invalid abort parameter: ${abortTiming}`);
+    }
+    let errorMessage = "";
 
     for (let i = 0; i < exports.CONFIG.feeds.length; i++) {
         let feed = feedConfigToFeedInfo(exports.CONFIG, i);
         Logger.log(`Check ${feed.feed_url}`);
-        const items = getArxivFeed(feed.feed_url);
+        let items;
+        try {
+            items = getArxivFeed(feed.feed_url);
+        } catch (e) {
+            if (abortTiming === "immediately") throw e;
+            const msg = `Failed to get feed ${feed.feed_url}: ${e}`;
+            Logger.log(msg);
+            errorMessage += `${msg}\n`;
+            continue;
+        }
         for (const item of items) {
             // Split "My Awesome Paper. (arXiv:0123.456789v0 [ab.CD])"
             let title = item.title;
@@ -56,26 +75,49 @@ function execute(dryRun: boolean) {
             } else {
                 Logger.log(`${item.id} is new!`);
                 let abst = formatText(item.abst);
-                if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
-                    abst = LanguageApp.translate(abst, "en", feed.target_lang);
+                try {
+                    if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
+                        abst = LanguageApp.translate(abst, "en", feed.target_lang);
+                    }
+                    if (!dryRun && feed.translate_title && feed.target_lang !== "" && feed.target_lang !== "en") {
+                        title = LanguageApp.translate(title, "en", feed.target_lang);
+                    }
+                } catch (e) {
+                    if (abortTiming === "immediately") throw e;
+                    const msg = `Failed to translate: ${e}`;
+                    Logger.log(msg);
+                    errorMessage += `${msg}\n`;
+                    continue;
                 }
-                if (!dryRun && feed.translate_title && feed.target_lang !== "" && feed.target_lang !== "en") {
-                    title = LanguageApp.translate(title, "en", feed.target_lang);
-                }
-                acquiredIDs.add(item.id);
-                sheet.appendID(item.id);
                 const feedText = `${item.link}
 ${title} ${info}
 
 ${abst}`;
                 Logger.log(feedText);
+                let errSlack = false;
                 if (!dryRun) {
                     feed.slack_urls.forEach(slack_url => {
-                        postToSlack(slack_url.trim(), feedText);
+                        try {
+                            postToSlack(slack_url, feedText);
+                        } catch (e) {
+                            if (abortTiming === "immediately") throw e;
+                            errSlack = true;
+                            const msg = `Failed to post to Slack ${slack_url}: ${e}`;
+                            Logger.log(msg);
+                            errorMessage += `${msg}\n`;
+                        }
                     });
+                }
+                if (!errSlack) {
+                    acquiredIDs.add(item.id);
+                    sheet.appendID(item.id);
                 }
             }
         }
+    }
+    if (errorMessage.length !== 0) {
+        Logger.log(errorMessage);
+        if (abortTiming === "yes") throw new Error(errorMessage);
     }
 }
 

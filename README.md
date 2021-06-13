@@ -2,6 +2,8 @@
 
 A Google Apps Script (GAS) to send translated arXiv feeds to Slack.
 
+If you want to get feeds other than arXiv, please use [Feeder](https://github.com/takubokudori/Feeder).
+
 # Usage
 
 0. Install and setup [clasp](https://github.com/google/clasp) and npm and Slack webhook.
@@ -30,6 +32,7 @@ export const CONFIG: GlobalFeedConfig = {
         "https://hooks.slack.com/services/Y0ur/w5bHO0k/URL",
         "https://hooks.slack.com/services/Y0ur/w5bHO0k/URL2",
     ],
+    abort: "no",
     target_lang: "ja",
     translate_title: true,
     ignore_updated: false,
@@ -44,6 +47,10 @@ export const CONFIG: GlobalFeedConfig = {
 Edit parameters.
 
 - slack_urls : Slack webhook URLs.
+- abort: Abort timing. `"no"` by default.
+    - "immediately": Abort immediately when an error occurs.
+    - "yes": Accumulate a log when an error occurs and finally abort.
+    - "no": Accumulate a log when an error occurs and finally do not abort.
 - source_lang : Source language. `"en"` by default.
 - target_lang : Target language. No translation by default.
 - translate_title : If this is true, titles will be translated. `false` by default.

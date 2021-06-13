@@ -20,6 +20,7 @@ export interface Feed {
 
 export interface GlobalFeedConfig {
     slack_urls: string[];
+    abort?: string;
     target_lang?: string;
     translate_title?: boolean;
     ignore_updated?: boolean;
