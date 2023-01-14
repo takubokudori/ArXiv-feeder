@@ -1,5 +1,5 @@
 /*
-Copyright 2021 takubokudori
+Copyright 2023 takubokudori
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -71,47 +71,47 @@ function execute(dryRun: boolean) {
                 continue;
             }
             if (acquiredIDs.has(item.id)) {
-                Logger.log(`${item.id} is already acquired.`);
-            } else {
-                Logger.log(`${item.id} is new!`);
-                let abst = formatText(item.abst);
-                try {
-                    if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
-                        abst = LanguageApp.translate(abst, "en", feed.target_lang);
-                    }
-                    if (!dryRun && feed.translate_title && feed.target_lang !== "" && feed.target_lang !== "en") {
-                        title = LanguageApp.translate(title, "en", feed.target_lang);
-                    }
-                } catch (e) {
-                    if (abortTiming === "immediately") throw e;
-                    const msg = `Failed to translate: ${e}`;
-                    Logger.log(msg);
-                    errorMessage += `${msg}\n`;
-                    continue;
+                Logger.log(`[Already] ${item.id}`);
+                continue;
+            }
+            Logger.log(`[  New  ] ${item.id}`);
+            let abst = formatText(item.abst);
+            try {
+                if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
+                    abst = LanguageApp.translate(abst, "en", feed.target_lang);
                 }
-                const feedText = `${item.link}
+                if (!dryRun && feed.translate_title && feed.target_lang !== "" && feed.target_lang !== "en") {
+                    title = LanguageApp.translate(title, "en", feed.target_lang);
+                }
+            } catch (e) {
+                if (abortTiming === "immediately") throw e;
+                const msg = `Failed to translate: ${e}`;
+                Logger.log(msg);
+                errorMessage += `${msg}\n`;
+                continue;
+            }
+            const feedText = `${item.link}
 ${title} ${info}
 
 ${abst}`;
-                Logger.log(feedText);
-                let errSlack = false;
-                if (!dryRun) {
-                    feed.slack_urls.forEach(slack_url => {
-                        try {
-                            postToSlack(slack_url, feedText);
-                        } catch (e) {
-                            if (abortTiming === "immediately") throw e;
-                            errSlack = true;
-                            const msg = `Failed to post to Slack ${slack_url}: ${e}`;
-                            Logger.log(msg);
-                            errorMessage += `${msg}\n`;
-                        }
-                    });
-                }
-                if (!errSlack) {
-                    acquiredIDs.add(item.id);
-                    sheet.appendID(item.id);
-                }
+            Logger.log(feedText);
+            let errSlack = false;
+            if (!dryRun) {
+                feed.slack_urls.forEach(slack_url => {
+                    try {
+                        postToSlack(slack_url, feedText);
+                    } catch (e) {
+                        if (abortTiming === "immediately") throw e;
+                        errSlack = true;
+                        const msg = `Failed to post to Slack ${slack_url}: ${e}`;
+                        Logger.log(msg);
+                        errorMessage += `${msg}\n`;
+                    }
+                });
+            }
+            if (!errSlack) {
+                acquiredIDs.add(item.id);
+                sheet.appendID(item.id);
             }
         }
     }
