@@ -1,5 +1,5 @@
 /*
-Copyright 2023 takubokudori
+Copyright 2024 takubokudori
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -10,15 +10,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import {feedConfigToFeedInfo} from "./configuration";
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 import Integer = GoogleAppsScript.Integer;
+import {FeedInfo} from "./configuration";
+import {Entry} from "./feeder";
 
 /**
  * Run
  * @constructor
  */
-function run() {
+function run(): void {
     execute(false);
 }
 
@@ -26,11 +27,11 @@ function run() {
  * DryRun doesn't send to slack.
  * @constructor
  */
-function dryRun() {
+function dryRun(): void {
     execute(true);
 }
 
-function execute(dryRun: boolean) {
+function execute(dryRun: boolean): void {
     const sheet = ArXivSheet.getActiveArXivSheet();
     const acquiredIDs = sheet.getAcquiredIDs();
     const abortTiming = exports.CONFIG.abort ?? "no";
@@ -45,11 +46,11 @@ function execute(dryRun: boolean) {
     let errorMessage = "";
 
     for (let i = 0; i < exports.CONFIG.feeds.length; i++) {
-        let feed = feedConfigToFeedInfo(exports.CONFIG, i);
+        let feed: FeedInfo = exports.feedConfigToFeedInfo(exports.CONFIG, i);
         Logger.log(`Check ${feed.feed_url}`);
-        let items;
+        let items: Entry[];
         try {
-            items = getArxivFeed(feed.feed_url);
+            items = exports.fetchFeedUrl(feed.feed_url).getEntries();
         } catch (e) {
             if (abortTiming === "immediately") throw e;
             const msg = `Failed to get feed ${feed.feed_url}: ${e}`;
@@ -60,14 +61,8 @@ function execute(dryRun: boolean) {
         for (const item of items) {
             // Split "My Awesome Paper. (arXiv:0123.456789v0 [ab.CD])"
             let title = item.title;
-            let info = "";
-            const p = title.lastIndexOf("(arXiv:");
-            if (p !== -1) {
-                info = title.substr(p); // (arXiv:0123.456789v0 [ab.CD])
-                title = title.substr(0, p); // My Awesome Paper.
-            }
-            if (feed.ignore_updated && item.title.endsWith("UPDATED)")) {
-                Logger.log(`${item.id} is the updated paper.`)
+            if (feed.ignore_updated && item.is_updated) {
+                Logger.log(`[Ignored] ${item.id} is the updated paper.`)
                 continue;
             }
             if (acquiredIDs.has(item.id)) {
@@ -75,7 +70,7 @@ function execute(dryRun: boolean) {
                 continue;
             }
             Logger.log(`[  New  ] ${item.id}`);
-            let abst = formatText(item.abst);
+            let abst = formatText(item.description);
             try {
                 if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
                     abst = LanguageApp.translate(abst, "en", feed.target_lang);
@@ -91,7 +86,7 @@ function execute(dryRun: boolean) {
                 continue;
             }
             const feedText = `${item.link}
-${title} ${info}
+${title}
 
 ${abst}`;
             Logger.log(feedText);
@@ -155,31 +150,7 @@ class ArXivSheet {
 
 }
 
-function getArxivFeed(url: string) {
-    const xml = UrlFetchApp.fetch(url).getContentText();
-    const document = XmlService.parse(xml);
-    const root = document.getRootElement();
-    const atom = XmlService.getNamespace('http://purl.org/rss/1.0/');
-    const items = root.getChildren("item", atom);
-    const ret = new Array(0);
-    for (const item of items) {
-        const title = item.getChildText('title', atom);
-        const abst = item.getChildText('description', atom);
-        const link = item.getChildText('link', atom);
-        const id = link.substr(link.lastIndexOf('/') + 1);
-        ret.push(
-            {
-                id,
-                title,
-                link,
-                abst
-            }
-        );
-    }
-    return ret;
-}
-
-function postToSlack(url: string, text: string) {
+function postToSlack(url: string, text: string): void {
     UrlFetchApp.fetch(url,
         {
             'method': 'post',

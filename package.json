@@ -1,6 +1,6 @@
 {
   "name": "arxiv-feeder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "code.ts",
   "homepage": "https://github.com/takubokudori/ArXiv-feeder",
   "repository": {
@@ -15,14 +15,14 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@google/clasp": "^2.4.2",
-    "@types/core-js": "^2.5.5",
-    "@types/jest": "^29.2.5",
-    "eslint": "^8.31.0",
-    "jest": "^29.3.1",
-    "ts-jest": "^29.0.5"
+    "@types/core-js": "^2.5.8",
+    "@types/jest": "^29.5.12",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2"
   },
   "dependencies": {
-    "@types/google-apps-script": "^1.0.57"
+    "@types/google-apps-script": "^1.0.80"
   },
   "description": "A Google Apps Script (GAS) to send translated arXiv feeds to Slack.",
   "roots": [

@@ -37,9 +37,9 @@ export const CONFIG: GlobalFeedConfig = {
     translate_title: true,
     ignore_updated: false,
     feeds: [
-        "http://export.arxiv.org/rss/cs.DC",
+        "https://rss.arxiv.org/rss/cs.DC",
         // I want to ignore the updated papers in the math.QA feed and send them only to the first webhook URL.
-        {feed_url: "http://export.arxiv.org/rss/math.QA", ignore_update: true, slack_urls: [0]}
+        {feed_url: "https://rss.arxiv.org/atom/math.QA", ignore_updated: true, slack_urls: [0]}
     ],
 };
 ```
@@ -77,3 +77,8 @@ clasp push
 
 See ./LICENSE
 
+## ChangeLog
+
+### v1.1.0(2024/2/12)
+
+- Support [Re-implemented arXiv RSS](https://blog.arxiv.org/2024/01/31/attention-arxiv-users-re-implemented-rss/)
