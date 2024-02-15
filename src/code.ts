@@ -59,7 +59,6 @@ function execute(dryRun: boolean): void {
             continue;
         }
         for (const item of items) {
-            // Split "My Awesome Paper. (arXiv:0123.456789v0 [ab.CD])"
             let title = item.title;
             if (feed.ignore_updated && item.is_updated) {
                 Logger.log(`[Ignored] ${item.id} is the updated paper.`)

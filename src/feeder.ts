@@ -78,7 +78,8 @@ export class Feed implements Feeder {
     }
 
     getId(entry: Element): string {
-        return this.getLink(entry);
+        const link = this.getLink(entry);
+        return link.substring(link.lastIndexOf('/') + 1);
     }
 
     getLink(entry: Element): string {
@@ -115,7 +116,8 @@ export class Rss implements Feeder {
     }
 
     getId(entry: Element): string {
-        return this.getLink(entry);
+        const link = this.getLink(entry);
+        return link.substring(link.lastIndexOf('/') + 1);
     }
 
     getLink(entry: Element): string {
@@ -134,13 +136,14 @@ export class Rss implements Feeder {
 function getEntriesData(feeder: Feeder): Entry[] {
     const ret: Entry[] = new Array(0);
     for (const entry of feeder.getEntryElements()) {
+        const id = feeder.getId(entry);
         const title = feeder.getTitle(entry);
         const link = feeder.getLink(entry);
         const description = feeder.getDescription(entry);
         const is_updated = feeder.getIsUpdated(entry);
         ret.push(
             {
-                id: link,
+                id,
                 title,
                 link,
                 description,
