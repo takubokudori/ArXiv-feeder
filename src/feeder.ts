@@ -16,6 +16,7 @@ import Element = GoogleAppsScript.XML_Service.Element;
 export interface Entry {
     id: string,
     title: string,
+    categories: string,
     link: string,
     description: string,
     is_updated: boolean,
@@ -26,6 +27,24 @@ export function fetchFeedUrl(url: string): Feeder {
     const document = XmlService.parse(xml);
     const root = document.getRootElement();
     return getFeeder(root);
+}
+
+function categories2str(categories: Element[], func_cat2str: (x: Element) => string): string {
+    if (categories.length === 0) {
+        return "";
+    }
+    const str_categories = categories.map(func_cat2str);
+    str_categories.sort();
+    let ret = "("
+    for (let i = 0; i < str_categories.length; i++) {
+        if (str_categories[i] === "") continue;
+        if (i != 0) {
+            ret += ", ";
+        }
+        ret += str_categories[i];
+    }
+    ret += ")";
+    return ret;
 }
 
 function getFeeder(root: Element): Feeder | null {
@@ -46,6 +65,8 @@ export interface Feeder {
     getEntries(): Entry[];
 
     getTitle(entry: Element): string;
+
+    getCategories(entry: Element): string;
 
     getLink(entry: Element): string;
 
@@ -77,6 +98,11 @@ export class Feed implements Feeder {
         return entry.getChild('title', Feed.nameSpace).getText();
     }
 
+    getCategories(entry: Element): string {
+        const categories = entry.getChildren('category', Feed.nameSpace);
+        return categories2str(categories, (x) => x.getAttribute("term").getValue());
+    }
+
     getId(entry: Element): string {
         const link = this.getLink(entry);
         return link.substring(link.lastIndexOf('/') + 1);
@@ -91,7 +117,7 @@ export class Feed implements Feeder {
     }
 
     getIsUpdated(entry: Element): boolean {
-        return entry.getChild('announce_type', Feed.arxiv).getText().toLowerCase() !== "new";
+        return entry.getChild('announce_type', Feed.arxiv).getText().toLowerCase().indexOf("replace") !== -1;
     }
 }
 
@@ -115,6 +141,11 @@ export class Rss implements Feeder {
         return entry.getChild('title').getText();
     }
 
+    getCategories(entry: Element): string {
+        const categories = entry.getChildren('category');
+        return categories2str(categories, (x) => x.getText());
+    }
+
     getId(entry: Element): string {
         const link = this.getLink(entry);
         return link.substring(link.lastIndexOf('/') + 1);
@@ -129,7 +160,7 @@ export class Rss implements Feeder {
     }
 
     getIsUpdated(entry: Element): boolean {
-        return entry.getChild('announce_type', Rss.arxiv).getText().toLowerCase() !== "new";
+        return entry.getChild('announce_type', Feed.arxiv).getText().toLowerCase().indexOf("replace") !== -1;
     }
 }
 
@@ -138,6 +169,7 @@ function getEntriesData(feeder: Feeder): Entry[] {
     for (const entry of feeder.getEntryElements()) {
         const id = feeder.getId(entry);
         const title = feeder.getTitle(entry);
+        const categories = feeder.getCategories(entry);
         const link = feeder.getLink(entry);
         const description = feeder.getDescription(entry);
         const is_updated = feeder.getIsUpdated(entry);
@@ -145,6 +177,7 @@ function getEntriesData(feeder: Feeder): Entry[] {
             {
                 id,
                 title,
+                categories,
                 link,
                 description,
                 is_updated,

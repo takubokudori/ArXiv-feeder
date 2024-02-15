@@ -60,6 +60,7 @@ function execute(dryRun: boolean): void {
         }
         for (const item of items) {
             let title = item.title;
+            let categories = item.categories;
             if (feed.ignore_updated && item.is_updated) {
                 Logger.log(`[Ignored] ${item.id} is the updated paper.`)
                 continue;
@@ -68,7 +69,11 @@ function execute(dryRun: boolean): void {
                 Logger.log(`[Already] ${item.id}`);
                 continue;
             }
-            Logger.log(`[  New  ] ${item.id}`);
+            if (item.is_updated) {
+                Logger.log(`[Updated] ${item.id}`);
+            } else {
+                Logger.log(`[  New  ] ${item.id}`);
+            }
             let abst = formatText(item.description);
             try {
                 if (!dryRun && feed.target_lang !== "" && feed.target_lang !== "en") {
@@ -85,7 +90,7 @@ function execute(dryRun: boolean): void {
                 continue;
             }
             const feedText = `${item.link}
-${title}
+${title} ${categories}
 
 ${abst}`;
             Logger.log(feedText);

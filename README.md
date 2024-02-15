@@ -79,6 +79,12 @@ See ./LICENSE
 
 ## ChangeLog
 
+### v1.1.1(2024/2/16)
+
+- Fix arxiv id
+- Append the categories to the end of the title
+- Changed to consider a paper that contains `replace` in `announce_type` as an updated paper.
+
 ### v1.1.0(2024/2/12)
 
 - Support [Re-implemented arXiv RSS](https://blog.arxiv.org/2024/01/31/attention-arxiv-users-re-implemented-rss/)

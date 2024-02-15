@@ -1,6 +1,6 @@
 {
   "name": "arxiv-feeder",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "code.ts",
   "homepage": "https://github.com/takubokudori/ArXiv-feeder",
   "repository": {
